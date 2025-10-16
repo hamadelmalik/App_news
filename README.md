@@ -1,16 +1,35 @@
-# newsapp
+# 📰 App_news
 
-A new Flutter project.
+تطبيق Flutter لعرض الأخبار بشكل أنيق وسريع، مع واجهة مستخدم بسيطة وتجربة سلسة للمستخدم.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 📱 المميزات
 
-A few resources to get you started if this is your first Flutter project:
+- عرض الأخبار حسب الفئة (سياسة، رياضة، تقنية، إلخ)
+- واجهة مستخدم متجاوبة وسهلة الاستخدام
+- دعم الوضع الليلي (Dark Mode)
+- حفظ الأخبار المفضلة
+- تحديث تلقائي للمحتوى من خلال API
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🧰 التقنيات المستخدمة
+
+| التقنية        | الاستخدام                         |
+|----------------|----------------------------------|
+| Flutter        | بناء واجهة المستخدم والتطبيق بالكامل |
+| Dart           | لغة البرمجة الأساسية              |
+| HTTP package   | جلب البيانات من API              |
+| Provider / Bloc| إدارة الحالة                     |
+| Google Fonts   | تحسين شكل النصوص                 |
+
+---
+
+## 🚀 طريقة التشغيل
+
+```bash
+git clone https://github.com/hamadelmalik/App_news.git
+cd App_news
+flutter pub get
+flutter run
