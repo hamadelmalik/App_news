@@ -57,7 +57,7 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text(selectedCategory== null ? "Home" : selectedCategory!.categoryName)),
+        title: Center(child: Text(selectedCategory== selectedCategory ? "Home" : selectedCategory!.categoryName)),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -96,7 +96,7 @@ class _HomeViewState extends State<HomeView> {
             ),
           ),
         ),
-      ): ArticlesView(),
+      ): ArticlesView(selectedCategory: selectedCategory!,),
     );
   }
   void onSelectCategory(CategoryData categoryData) {
