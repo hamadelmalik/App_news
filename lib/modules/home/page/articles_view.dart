@@ -8,8 +8,13 @@ import 'package:news_app/network/api_services.dart';
 
 class ArticlesView extends StatefulWidget {
   final CategoryData? selectedCategory;
+  final String searchKeyword;
 
-  const ArticlesView({super.key, this.selectedCategory});
+  const ArticlesView({
+    super.key,
+    this.selectedCategory,
+    this.searchKeyword = '',
+  });
 
   @override
   State<ArticlesView> createState() => _ArticlesViewState();
@@ -32,6 +37,8 @@ class _ArticlesViewState extends State<ArticlesView> {
         }
 
         List<SourceData> sourcesList = snapshot.data ?? [];
+
+
 
         if (sourcesList.isEmpty) {
           return const Center(child: Text("No sources found 😕"));
@@ -83,51 +90,54 @@ class _ArticlesViewState extends State<ArticlesView> {
                   }
 
                   List<ArticleData> articlesList = snapshot.data ?? [];
+                  List<ArticleData> displayArticles = widget.searchKeyword.isEmpty
+                      ? articlesList
+                      : articlesList.where((article) {
+                    return article.title.toLowerCase().contains(
+                      widget.searchKeyword.toLowerCase(),
+                    );
+                  }).toList();
 
                   return Expanded(
                     child: ListView.builder(
-                      physics: ClampingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
+                      itemCount: displayArticles.length,
                       itemBuilder: (context, index) {
+                        final article = displayArticles[index];
                         return Container(
-                          margin: EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          padding: EdgeInsets.all(8),
+                          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16.0),
-                            border: Border.all(color: Color(0xFF171717)),
+                            border: Border.all(color: const Color(0xFF171717)),
                           ),
                           child: Column(
                             spacing: 10,
                             children: [
                               CachedNetworkImage(
-                                imageUrl: articlesList[index].urlToImage,
-                                imageBuilder: (context, imageProvider) =>
-                                    Container(
-                                      height: 220,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(16),
-                                        image: DecorationImage(
-                                          image: imageProvider,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                placeholder: (context, url) => SizedBox(
+                                imageUrl: article.urlToImage,
+                                imageBuilder: (context, imageProvider) => Container(
                                   height: 220,
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    image: DecorationImage(
+                                      image: imageProvider,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 ),
-                                errorWidget: (context, url, error) => SizedBox(
+                                placeholder: (context, url) => const SizedBox(
+                                  height: 220,
+                                  child: Center(child: CircularProgressIndicator()),
+                                ),
+                                errorWidget: (context, url, error) => const SizedBox(
                                   height: 220,
                                   child: Icon(Icons.error, size: 50),
                                 ),
                               ),
                               Text(
-                                articlesList[index].title,
-                                style: TextStyle(
+                                article.title,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF171717),
@@ -135,14 +145,13 @@ class _ArticlesViewState extends State<ArticlesView> {
                                 ),
                               ),
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      "By : ${articlesList[index].source.sourceName}",
-                                      style: TextStyle(
+                                      "By : ${article.source.sourceName}",
+                                      style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
                                         color: Color(0xFFA0A0A0),
@@ -150,8 +159,8 @@ class _ArticlesViewState extends State<ArticlesView> {
                                     ),
                                   ),
                                   Text(
-                                    "${timeAgo(DateTime.parse(articlesList[index].publishedAt))}",
-                                    style: TextStyle(
+                                    "${timeAgo(DateTime.parse(article.publishedAt))}",
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                       color: Color(0xFFA0A0A0),
@@ -163,9 +172,9 @@ class _ArticlesViewState extends State<ArticlesView> {
                           ),
                         );
                       },
-                      itemCount: articlesList.length,
                     ),
                   );
+
                 },
               ),
             ],
