@@ -33,9 +33,7 @@ class CustomDrawerView extends StatelessWidget {
               GestureDetector(
                 onTap: onTap,
 
-
-
-                child: Padding(
+               child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
                   child: Icon(Icons.home_max, color: Colors.white, size: 40),
                 ),

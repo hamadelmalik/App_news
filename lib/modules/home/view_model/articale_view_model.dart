@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:news_app/models/articale_data.dart';
 import 'package:news_app/models/source.dart';
@@ -5,7 +7,7 @@ import 'package:news_app/network/api_services.dart';
 
 class ArticlesViewModel extends ChangeNotifier {
   /// hold and prepare data to view
-  List<ArticleData> _filteredArticles = [];
+
   bool _isLoadingSources = true;
   bool _isLoadingArticles = true;
   int _selectedIndex = 0;
@@ -17,8 +19,6 @@ class ArticlesViewModel extends ChangeNotifier {
   bool get isLoadingArticles => _isLoadingArticles;
 
   int get selectedIndex => _selectedIndex;
-  List<ArticleData> get filteredArticles => _filteredArticles;
-
 
   List<SourceData> get sourcesList => _sourcesList;
 
@@ -39,7 +39,6 @@ class ArticlesViewModel extends ChangeNotifier {
   Future<void> getAllArticles(String sourceID) async {
     try {
       _articlesList = await APIServices.getAllArticles(sourceID);
-      _filteredArticles = _articlesList;
       changeLoadingArticlesState(false);
     } catch (error) {
       throw Exception();
@@ -63,25 +62,16 @@ class ArticlesViewModel extends ChangeNotifier {
     _isLoadingArticles = value;
     notifyListeners();
   }
-  void searchArticles(String keyword) {
-    if (keyword.isEmpty) {
-      _filteredArticles = _articlesList;
-    } else {
-      final input = keyword.toString().toLowerCase();
+  List<ArticleData> searchArticles(String keyword) {
+    if (keyword.isEmpty) return _articlesList;
 
-      _filteredArticles = _articlesList.where((article) {
-        final title = article.title.toString().toLowerCase();
-        return title.startsWith(input);
-      }).toList();
+    final lowerKeyword = keyword.toLowerCase();
 
-      if (_filteredArticles.isEmpty) {
-        _filteredArticles = _articlesList.where((article) {
-          final title = article.title.toString().toLowerCase();
-          return title.contains(input);
-        }).toList();
-      }
-    }
-
-    notifyListeners();
+    return _articlesList.where((article) {
+      return article.title.toLowerCase().contains(lowerKeyword) ||
+          article.description.toLowerCase().contains(lowerKeyword) ||
+          article.source.sourceName.toLowerCase().startsWith(lowerKeyword);
+    }).toList();
   }
+
 }
