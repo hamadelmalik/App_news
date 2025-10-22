@@ -67,16 +67,16 @@ class ArticlesViewModel extends ChangeNotifier {
     if (keyword.isEmpty) {
       _filteredArticles = _articlesList;
     } else {
-      final input = keyword.toLowerCase();
+      final input = keyword.toString().toLowerCase();
 
       _filteredArticles = _articlesList.where((article) {
-        final title = article.title.toLowerCase();
+        final title = article.title.toString().toLowerCase();
         return title.startsWith(input);
       }).toList();
 
       if (_filteredArticles.isEmpty) {
         _filteredArticles = _articlesList.where((article) {
-          final title = article.title.toLowerCase() ;
+          final title = article.title.toString().toLowerCase();
           return title.contains(input);
         }).toList();
       }
