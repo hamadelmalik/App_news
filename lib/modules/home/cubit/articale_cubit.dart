@@ -1,11 +1,13 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_app/models/article_data.dart';
 import 'package:news_app/models/source.dart';
+import 'package:news_app/modules/home/cubit/articles_state.dart';
 import 'package:news_app/network/api_services.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
-class ArticlesViewModel extends ChangeNotifier {
-  /// hold and prepare data to view
-  List<ArticleData> _filteredArticles = [];
+class ArticlesCubit extends Cubit<ArticlesState> {
+  ArticlesCubit() : super(LoadingArticlesState());
+
   bool _isLoadingSources = true;
   bool _isLoadingArticles = true;
   int _selectedIndex = 0;
@@ -17,8 +19,6 @@ class ArticlesViewModel extends ChangeNotifier {
   bool get isLoadingArticles => _isLoadingArticles;
 
   int get selectedIndex => _selectedIndex;
-  List<ArticleData> get filteredArticles => _filteredArticles;
-
 
   List<SourceData> get sourcesList => _sourcesList;
 
@@ -26,6 +26,7 @@ class ArticlesViewModel extends ChangeNotifier {
 
   Future<void> getAllSources(String categoryID) async {
     try {
+      emit(LoadingArticlesState());
       _sourcesList = await APIServices.getAllSources(categoryID);
       changeLoadingSourcesState(false);
       getAllArticles(_sourcesList[_selectedIndex].sourceId);
@@ -33,55 +34,40 @@ class ArticlesViewModel extends ChangeNotifier {
       throw Exception();
     }
 
-    notifyListeners();
+    emit(SourcesLoadedState(sourcesList: _sourcesList));
   }
 
   Future<void> getAllArticles(String sourceID) async {
     try {
       _articlesList = await APIServices.getAllArticles(sourceID);
-      _filteredArticles = _articlesList;
       changeLoadingArticlesState(false);
     } catch (error) {
       throw Exception();
     }
 
-    notifyListeners();
+    emit(ArticlesLoadedState(articlesList: _articlesList));
   }
 
   void changeTabIndex(int index) {
     _selectedIndex = index;
     getAllArticles(_sourcesList[_selectedIndex].sourceId);
-    notifyListeners();
   }
 
   void changeLoadingSourcesState(bool value) {
     _isLoadingSources = value;
-    notifyListeners();
   }
 
   void changeLoadingArticlesState(bool value) {
     _isLoadingArticles = value;
-    notifyListeners();
   }
-  void searchArticles(String keyword) {
-    if (keyword.isEmpty) {
-      _filteredArticles = _articlesList;
-    } else {
-      final input = keyword.toString().toLowerCase();
-
-      _filteredArticles = _articlesList.where((article) {
-        final title = article.title.toString().toLowerCase();
-        return title.startsWith(input);
-      }).toList();
-
-      if (_filteredArticles.isEmpty) {
-        _filteredArticles = _articlesList.where((article) {
-          final title = article.title.toString().toLowerCase();
-          return title.contains(input);
-        }).toList();
-      }
+  String timeAgo(String? dateString) {
+    if (dateString == null || dateString.isEmpty) return '';
+    try {
+      final dateTime = DateTime.parse(dateString);
+      return timeago.format(dateTime, locale: 'en');
+    } catch (e) {
+      return dateString;
     }
-
-    notifyListeners();
   }
+
 }

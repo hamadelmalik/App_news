@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:news_app/models/category_data.dart';
-import 'package:news_app/modules/home/view/home_view.dart';
-import 'package:news_app/modules/home/view_model/articale_view_model.dart';
-import 'package:provider/provider.dart';
-import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_app/models/category_data.dart';
+import 'package:news_app/modules/home/cubit/articale_cubit.dart';
+import 'package:news_app/modules/home/cubit/articles_state.dart';
+import 'package:news_app/modules/home/view/home_view.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 
 
 class ArticlesView extends StatefulWidget {
@@ -25,19 +26,16 @@ class _ArticlesViewState extends State<ArticlesView> {
 
   @override
   Widget build(BuildContext context) {
-
-
-    return ChangeNotifierProvider(
-      create:
-          (context) =>
-      ArticlesViewModel()..getAllSources(selectedCategory!.categoryId),
+    return BlocProvider(
+      create: (context) => ArticlesCubit()..getAllSources(selectedCategory!.categoryId),
       child: Column(
         spacing: 10,
         children: [
           SizedBox(height: 15),
-          Consumer<ArticlesViewModel>(
-            builder: (context, viewModel, child) {
-              return viewModel.isLoadingSources
+          BlocBuilder<ArticlesCubit, ArticlesState>(
+            builder: (context, viewModel) {
+              var viewModel = context.read<ArticlesCubit>();
+              return  viewModel.isLoadingSources
                   ? Shimmer(
                 duration: Duration(seconds: 1),
                 interval: Duration(milliseconds: 800),
@@ -81,8 +79,10 @@ class _ArticlesViewState extends State<ArticlesView> {
               );
             },
           ),
-          Consumer<ArticlesViewModel>(
-            builder: (context, viewModel, child) {
+///////////articles block builder /////////
+          BlocBuilder<ArticlesCubit, ArticlesState>(
+            builder: (context, state) {
+              var viewModel = context.read<ArticlesCubit>();
               return Expanded(
                 child: ListView.builder(
                   physics: ClampingScrollPhysics(),
@@ -170,14 +170,16 @@ class _ArticlesViewState extends State<ArticlesView> {
                                   ),
                                 ),
                               ),
+
+
                               Text(
-                                viewModel.articlesList[index].publishedAt,
+                                viewModel.timeAgo(viewModel.articlesList[index].publishedAt),
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   color: Color(0xFFA0A0A0),
                                 ),
-                              ),
+                              )
                             ],
                           ),
                         ],
@@ -191,107 +193,8 @@ class _ArticlesViewState extends State<ArticlesView> {
                 ),
               );
             },
-
-            // FutureBuilder(
-            //   future: APIServices.getAllArticles(
-            //     sourcesList[selectedIndex].sourceId,
-            //   ),
-            //   builder: (context, snapshot) {
-            //     if (snapshot.hasError) {
-            //       return Text(snapshot.error.toString());
-            //     }
-            //
-            //     if (snapshot.connectionState == ConnectionState.waiting) {
-            //       return Center(child: CircularProgressIndicator());
-            //     }
-            //
-            //     List<ArticleData> articlesList = snapshot.data ?? [];
-            //
-            //     return Expanded(
-            //       child: ListView.builder(
-            //         physics: ClampingScrollPhysics(),
-            //         itemBuilder: (context, index) {
-            //           return Container(
-            //             margin: EdgeInsets.symmetric(
-            //               horizontal: 20,
-            //               vertical: 10,
-            //             ),
-            //             padding: EdgeInsets.all(8),
-            //             decoration: BoxDecoration(
-            //               borderRadius: BorderRadius.circular(16.0),
-            //               border: Border.all(color: Color(0xFF171717)),
-            //             ),
-            //             child: Column(
-            //               spacing: 10,
-            //               children: [
-            //                 CachedNetworkImage(
-            //                   imageUrl: articlesList[index].urlToImage,
-            //                   imageBuilder:
-            //                       (context, imageProvider) => Container(
-            //                         height: 220,
-            //                         decoration: BoxDecoration(
-            //                           borderRadius: BorderRadius.circular(16),
-            //                           image: DecorationImage(
-            //                             image: imageProvider,
-            //                             fit: BoxFit.cover,
-            //                           ),
-            //                         ),
-            //                       ),
-            //                   placeholder:
-            //                       (context, url) => SizedBox(
-            //                         height: 220,
-            //                         child: Center(
-            //                           child: CircularProgressIndicator(),
-            //                         ),
-            //                       ),
-            //                   errorWidget:
-            //                       (context, url, error) => SizedBox(
-            //                         height: 220,
-            //                         child: Icon(Icons.error, size: 50),
-            //                       ),
-            //                 ),
-            //                 Text(
-            //                   articlesList[index].title,
-            //                   style: TextStyle(
-            //                     fontSize: 16,
-            //                     fontWeight: FontWeight.w700,
-            //                     color: Color(0xFF171717),
-            //                     height: 1.1,
-            //                   ),
-            //                 ),
-            //                 Row(
-            //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //                   crossAxisAlignment: CrossAxisAlignment.start,
-            //                   children: [
-            //                     Expanded(
-            //                       child: Text(
-            //                         "By : ${articlesList[index].source.sourceName}",
-            //                         style: TextStyle(
-            //                           fontSize: 12,
-            //                           fontWeight: FontWeight.w500,
-            //                           color: Color(0xFFA0A0A0),
-            //                         ),
-            //                       ),
-            //                     ),
-            //                     Text(
-            //                       articlesList[index].publishedAt,
-            //                       style: TextStyle(
-            //                         fontSize: 12,
-            //                         fontWeight: FontWeight.w500,
-            //                         color: Color(0xFFA0A0A0),
-            //                       ),
-            //                     ),
-            //                   ],
-            //                 ),
-            //               ],
-            //             ),
-            //           );
-            //         },
-            //         itemCount: articlesList.length,
-            //       ),
-            //     );
-            //   },
           ),
+
         ],
       ),
     );
