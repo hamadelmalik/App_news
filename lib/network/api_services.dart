@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:http/http.dart' as http;
-import 'package:news_app/models/artical_data.dart';
+import 'package:news_app/models/article_data.dart';
 import 'package:news_app/models/source.dart';
 import 'package:news_app/network/api_constants.dart';
 import 'package:news_app/network/end_point.dart';
@@ -35,7 +35,8 @@ class APIServices {
         }
         log(sourcesList.toString());
       }
-
+      log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+      log("API Response: ${response.body}");
       return sourcesList;
     } catch (error) {
       log("Error in getAllSources: $error");
