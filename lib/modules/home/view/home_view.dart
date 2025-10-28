@@ -1,158 +1,93 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
 import 'package:news_app/models/category_data.dart';
-import 'package:news_app/modules/home/view//articles_view.dart';
+import 'package:news_app/modules/home/view/articles_view.dart';
 import 'package:news_app/modules/home/view/custom_drawer_view.dart';
 import 'package:news_app/modules/home/widgets/categoryitem.dart';
+import 'package:news_app/modules/home/cubit/home_cubit.dart';
 
-class HomeView extends StatefulWidget {
+class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
   @override
-  State<HomeView> createState() => _HomeViewState();
-}
-CategoryData? selectedCategory;
-List<CategoryData> categoryList = [
-  CategoryData(
-    categoryId: 'General',
-    categoryName: 'General',
-    categoryImage: 'assets/images/general.png',
-  ),
-  CategoryData(
-    categoryId: 'Business',
-    categoryName: 'Business',
-    categoryImage: 'assets/images/business_img.png',
-  ),
-  CategoryData(
-    categoryId: 'Sports',
-    categoryName: 'Sports',
-    categoryImage: 'assets/images/sports_img.png',
-  ),
-  CategoryData(
-    categoryId: 'Health',
-    categoryName: 'Health',
-    categoryImage: 'assets/images/health_img.png',
-  ),
-  CategoryData(
-    categoryId: 'Science',
-    categoryName: 'Science',
-    categoryImage: 'assets/images/science_img.png',
-  ),
-  CategoryData(
-    categoryId: 'Technology',
-    categoryName: 'Technology',
-    categoryImage: 'assets/images/technology_img.png',
-  ),
-  CategoryData(
-    categoryId: 'Entertainment',
-    categoryName: 'Entertainment',
-    categoryImage: 'assets/images/entertainment_img.png',
-  ),
-];
-
-class _HomeViewState extends State<HomeView> {
- // TextEditingController searchController = TextEditingController();
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  bool isSearching = false;
-  String searchKeyword = '';
-
-  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        resizeToAvoidBottomInset: true,
+    final scaffoldKey = GlobalKey<ScaffoldState>();
 
-        key: scaffoldKey,
-        drawer: CustomDrawerView(
-          onTap: () {
-            setState(() {
-              selectedCategory = null;
-            });
-            Navigator.of(context).pop(); // يغلق Drawer عند الضغط على عنصر
-          },
-        ),
-        appBar: AppBar(
-          title: isSearching
-              ? TextField(
-            autofocus: true,
-            onChanged: (value) {
-              setState(() {
-                searchKeyword = value;
-              });
-            },
-            decoration: const InputDecoration(
-              hintText: 'Search articles...',
-              border: InputBorder.none,
-            ),
-          )
-              : Text(
-            selectedCategory == null
-                ? "Home"
-                : selectedCategory!.categoryName,
-          ),
-          leading: IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              scaffoldKey.currentState?.openDrawer();
-            },
-          ),
-          actions: [
-            if (selectedCategory != null)
-              IconButton(
-                icon: Icon(isSearching ? Icons.close : Icons.search),
-                onPressed: () {
-                  setState(() {
-                    if (isSearching) searchKeyword = '';
-                    isSearching = !isSearching;
-                  });
+    // قائمة التصنيفات
+    final categoryList = [
+      CategoryData(categoryId: 'General', categoryName: 'General', categoryImage: 'assets/images/general.png'),
+      CategoryData(categoryId: 'Business', categoryName: 'Business', categoryImage: 'assets/images/business_img.png'),
+      CategoryData(categoryId: 'Sports', categoryName: 'Sports', categoryImage: 'assets/images/sports_img.png'),
+      CategoryData(categoryId: 'Health', categoryName: 'Health', categoryImage: 'assets/images/health_img.png'),
+      CategoryData(categoryId: 'Science', categoryName: 'Science', categoryImage: 'assets/images/science_img.png'),
+      CategoryData(categoryId: 'Technology', categoryName: 'Technology', categoryImage: 'assets/images/technology_img.png'),
+      CategoryData(categoryId: 'Entertainment', categoryName: 'Entertainment', categoryImage: 'assets/images/entertainment_img.png'),
+    ];
+
+    return BlocProvider(
+      create: (_) => HomeCubit(),
+      child: BlocBuilder<HomeCubit, CategoryData?>(
+        builder: (context, selectedCategory) {
+          return SafeArea(
+            child: Scaffold(
+              key: scaffoldKey,
+              resizeToAvoidBottomInset: true,
+
+              // Drawer
+              drawer: CustomDrawerView(
+                onGoHome: () {
+                  Navigator.pop(context); // يقفل الـ Drawer
+                  context.read<HomeCubit>().goHome(); // يرجع للهوم
                 },
               ),
-          ],
-        ),
-        body: Column(
-          children: [
 
+              // AppBar مع زر قائمة لفتح Drawer
+              appBar: AppBar(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.black),
+                  onPressed: () {
+                    scaffoldKey.currentState?.openDrawer();
+                  },
+                ),
+                title: const Text(
+                  "News App",
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
 
-            Expanded(
-              child: selectedCategory == null
+              // Body: إما Home أو ArticlesView حسب state
+              body: selectedCategory == null
                   ? Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            Text(
-                              "Good Morning\nHere is Some News For You",
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Gap(20),
-                            ...categoryList.map((categoryData) {
-                              return CategoryItem(
-                                categoryData: categoryData,
-                                index: categoryList.indexOf(categoryData),
-                                onTap: onSelectCategory,
-                              );
-                            }),
-                          ],
-                        ),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Good Morning\nHere is Some News For You",
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
                       ),
-                    )
-                  : ArticlesView(
-                      selectedCategory: selectedCategory!,
-                      //searchKeyword: searchController.text,
-                    ),
+                      const Gap(20),
+                      ...categoryList.map((categoryData) {
+                        return CategoryItem(
+                          categoryData: categoryData,
+                          index: categoryList.indexOf(categoryData),
+
+                            onTap: context.read<HomeCubit>().selectCategory,
+
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              )
+                  : ArticlesView(selectedCategory: selectedCategory),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
-  }
-
-  void onSelectCategory(CategoryData categoryData) {
-    setState(() {
-      selectedCategory = categoryData;
-    });
   }
 }

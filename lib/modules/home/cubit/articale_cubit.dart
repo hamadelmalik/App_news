@@ -11,41 +11,48 @@ class ArticlesCubit extends Cubit<ArticlesState> {
   bool _isLoadingSources = true;
   bool _isLoadingArticles = true;
   int _selectedIndex = 0;
+
   List<SourceData> _sourcesList = [];
-  List<ArticleData> _articlesList = [];
+  List<ArticleData> _allArticlesList = []; // ✅ الأصلية
+  List<ArticleData> _filteredList = [];    // ✅ المعروضة بعد الفلترة
 
   bool get isLoadingSources => _isLoadingSources;
-
   bool get isLoadingArticles => _isLoadingArticles;
-
   int get selectedIndex => _selectedIndex;
 
   List<SourceData> get sourcesList => _sourcesList;
-
-  List<ArticleData> get articlesList => _articlesList;
+  List<ArticleData> get filteredList => _filteredList; // getter الجديد
 
   Future<void> getAllSources(String categoryID) async {
     try {
       emit(LoadingArticlesState());
+      _isLoadingSources = true;
       _sourcesList = await APIServices.getAllSources(categoryID);
-      changeLoadingSourcesState(false);
-      getAllArticles(_sourcesList[_selectedIndex].sourceId);
-    } catch (error) {
-      throw Exception();
-    }
+      _isLoadingSources = false;
 
-    emit(SourcesLoadedState(sourcesList: _sourcesList));
+      if (_sourcesList.isNotEmpty) {
+        await getAllArticles(_sourcesList[_selectedIndex].sourceId);
+      }
+
+      emit(SourcesLoadedState(sourcesList: _sourcesList));
+    } catch (error) {
+      rethrow;
+    }
   }
 
   Future<void> getAllArticles(String sourceID) async {
     try {
-      _articlesList = await APIServices.getAllArticles(sourceID);
-      changeLoadingArticlesState(false);
-    } catch (error) {
-      throw Exception();
-    }
+      _isLoadingArticles = true;
+      emit(LoadingArticlesState());
 
-    emit(ArticlesLoadedState(articlesList: _articlesList));
+      _allArticlesList = await APIServices.getAllArticles(sourceID);
+      _filteredList = List.from(_allArticlesList); // نسخ المقالات كلها
+
+      _isLoadingArticles = false;
+      emit(ArticlesLoadedState(articlesList: _filteredList));
+    } catch (error) {
+      rethrow;
+    }
   }
 
   void changeTabIndex(int index) {
@@ -53,13 +60,6 @@ class ArticlesCubit extends Cubit<ArticlesState> {
     getAllArticles(_sourcesList[_selectedIndex].sourceId);
   }
 
-  void changeLoadingSourcesState(bool value) {
-    _isLoadingSources = value;
-  }
-
-  void changeLoadingArticlesState(bool value) {
-    _isLoadingArticles = value;
-  }
   String timeAgo(String? dateString) {
     if (dateString == null || dateString.isEmpty) return '';
     try {
@@ -70,4 +70,19 @@ class ArticlesCubit extends Cubit<ArticlesState> {
     }
   }
 
+  /// 🔍 البحث باستخدام filteredList
+  void searchArticles(String query) {
+    if (query.isEmpty) {
+      _filteredList = List.from(_allArticlesList);
+    } else {
+      _filteredList = _allArticlesList.where((article) {
+        final title = article.title.toLowerCase();
+        final source = article.source.sourceName.toLowerCase();
+        return title.startsWith(query.toLowerCase()) ||
+            source.startsWith(query.toLowerCase());
+      }).toList();
+    }
+
+    emit(ArticlesLoadedState(articlesList: _filteredList));
+  }
 }
