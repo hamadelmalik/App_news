@@ -34,7 +34,6 @@ class HomeView extends StatelessWidget {
               key: scaffoldKey,
               resizeToAvoidBottomInset: true,
 
-              // Drawer
               drawer: CustomDrawerView(
                 onGoHome: () {
                   Navigator.pop(context); // يقفل الـ Drawer
@@ -52,12 +51,17 @@ class HomeView extends StatelessWidget {
                     scaffoldKey.currentState?.openDrawer();
                   },
                 ),
-                title: const Text(
-                  "News App",
-                  style: TextStyle(color: Colors.black),
+                title: BlocBuilder<HomeCubit, CategoryData?>(
+                  builder: (context, selectedCategory) {
+                    return Text(
+                      selectedCategory == null
+                          ? "News App"               // العنوان الافتراضي
+                          : selectedCategory.categoryName, // عنوان التصنيف المختار
+                      style: const TextStyle(color: Colors.black),
+                    );
+                  },
                 ),
               ),
-
               // Body: إما Home أو ArticlesView حسب state
               body: selectedCategory == null
                   ? Padding(
@@ -74,7 +78,6 @@ class HomeView extends StatelessWidget {
                         return CategoryItem(
                           categoryData: categoryData,
                           index: categoryList.indexOf(categoryData),
-
                             onTap: context.read<HomeCubit>().selectCategory,
 
                         );
