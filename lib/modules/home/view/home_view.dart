@@ -53,115 +53,82 @@ class HomeView extends StatelessWidget {
       ),
     ];
 
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => HomeCubit()),
-        BlocProvider(create: (_) => ArticlesCubit()),
-      ],
-      child: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
-          final cubit = context.read<HomeCubit>();
-          return SafeArea(
-            child: Scaffold(
-              key: scaffoldKey,
-              resizeToAvoidBottomInset: true,
-              drawer: CustomDrawerView(
-                onGoHome: () {
-                  Navigator.pop(context);
-                  cubit.goHome();
-                },
-              ),
-              appBar: state.selectedCategory == null
-                  ? AppBar(
-                      backgroundColor: Colors.white,
-                      elevation: 0,
-                      leading: IconButton(
-                        icon: const Icon(Icons.menu, color: Colors.black),
-                        onPressed: () {
-                          scaffoldKey.currentState?.openDrawer();
-                        },
-                      ),
-                      title: const Text(
-                        'News App',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    )
-                  : AppBar(
-                      backgroundColor: Colors.white,
-                      elevation: 0,
-                      title: state.isSearching
-                          ? SizedBox(
-                              height: 40,
-                              child: TextField(
-                                autofocus: true,
-                                onChanged: (query) {
-                                  // 🔹 هنا البحث الفعلي
-                                  context.read<ArticlesCubit>().searchArticles(
-                                    query,
-                                  );
-                                },
-                                decoration: InputDecoration(
-                                  hintText: 'Search articles...',
-                                  prefixIcon: const Icon(Icons.search),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 0,
-                                    horizontal: 12,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-                            )
-                          : Text(
-                              state.selectedCategory?.categoryName ??
-                                  'Articles',
-                              style: const TextStyle(color: Colors.black),
-                            ),
-                      actions: [
-                        IconButton(
-                          icon: Icon(
-                            state.isSearching ? Icons.close : Icons.search,
-                            color: Colors.black,
-                          ),
-                          onPressed: cubit.toggleSearch,
-                        ),
-                      ],
-                    ),
+    return BlocBuilder<HomeCubit, HomeState>(
+      builder: (context, state) {
+        final cubit = context.read<HomeCubit>();
 
-              body: state.selectedCategory == null
-                  ? Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            const Text(
-                              "Good Morning\nHere is Some News For You",
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const Gap(20),
-                            ...categoryList.map((categoryData) {
-                              return CategoryItem(
-                                categoryData: categoryData,
-                                index: categoryList.indexOf(categoryData),
-                                onTap: cubit.selectCategory,
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                    )
-                  : ArticlesView(selectedCategory: state.selectedCategory!),
+        return SafeArea(
+          child: Scaffold(
+            key: scaffoldKey,
+            drawer: CustomDrawerView(
+              onGoHome: () {
+                Navigator.pop(context);
+                cubit.goHome();
+              },
             ),
-          );
-        },
-      ),
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.menu, color: Colors.black),
+                onPressed: () => scaffoldKey.currentState?.openDrawer(),
+              ),
+              title: state.isSearching
+                  ? TextField(
+                autofocus: true,
+                onChanged: (query) {
+                  context.read<ArticlesCubit>().searchArticles(query);
+                },
+                decoration: InputDecoration(
+                  hintText: 'Search articles...',
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: Colors.grey.shade200,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                ),
+              )
+                  : Text(
+                state.selectedCategory?.categoryName ?? 'News App',
+                style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w500),
+              ),
+              actions: [
+                if (state.selectedCategory != null)
+                  IconButton(
+                    icon: Icon(state.isSearching ? Icons.close : Icons.search, color: Colors.black),
+                    onPressed: cubit.toggleSearch,
+                  ),
+              ],
+            ),
+            body: state.selectedCategory == null
+                ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const Text(
+                      "Good Morning\nHere is Some News For You",
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
+                    ),
+                    const Gap(20),
+                    ...categoryList.map((category) {
+                      return CategoryItem(
+                        categoryData: category,
+                        index: categoryList.indexOf(category),
+                        onTap: cubit.selectCategory,
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            )
+                : ArticlesView(selectedCategory: state.selectedCategory!),
+          ),
+        );
+      },
     );
   }
 }
