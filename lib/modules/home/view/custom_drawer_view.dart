@@ -3,8 +3,8 @@ import 'package:gap/gap.dart';
 import 'package:news_app/core/constants/constants_assets.dart';
 
 class CustomDrawerView extends StatelessWidget {
-  final Function() onTap;
-  const CustomDrawerView({super.key, required this.onTap});
+  final Function() onGoHome;
+  const CustomDrawerView({super.key, required this.onGoHome});
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +31,7 @@ class CustomDrawerView extends StatelessWidget {
           Row(
             children: [
               GestureDetector(
-                onTap: onTap,
-
-
-
+                onTap: onGoHome,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
                   child: Icon(Icons.home_max, color: Colors.white, size: 40),
